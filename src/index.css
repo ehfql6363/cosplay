@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI',
+    'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+
+  /* 야간 퍼레이드: 어두운 하늘 위에 형광 조명 */
+  --color-night-950: #070b1c;
+  --color-night-900: #0b1026;
+  --color-night-800: #141a3a;
+  --color-night-700: #1f2750;
+  --color-night-600: #2e3868;
+
+  --color-neon-yellow: #ffd84d;
+  --color-neon-pink: #ff5fa2;
+  --color-neon-cyan: #5fe3ff;
+  --color-neon-lime: #9df07a;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--color-night-950);
+  color: #eef1ff;
+  font-family: var(--font-sans);
+  /* 멀리서 번지는 조명 두 개 */
+  background-image:
+    radial-gradient(60rem 40rem at 15% -10%, rgb(255 95 162 / 0.16), transparent 60%),
+    radial-gradient(50rem 36rem at 92% 8%, rgb(95 227 255 / 0.14), transparent 62%);
+  background-attachment: fixed;
+}
+
+/* 아이 손가락 기준으로 터치 타겟을 넉넉히 잡는다 */
+button {
+  min-height: 44px;
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * 이미지로 내보내는 동안만 켜지는 상태.
+ * 버튼을 캡처에서 걸러내기만 하면 원래 높이가 그대로 남아 빈 자리가 생기므로,
+ * 실제로 숨겨서 레이아웃이 줄어든 뒤에 찍는다.
+ * 아래쪽 여백은 넉넉히 둔다. 웹폰트를 이미지에 심지 못하는 상황에서는 복제본이
+ * 대체 폰트로 그려지면서 원본보다 조금 길어지는데, 이 여백이 그 차이를 흡수해
+ * 마지막 카드가 잘리는 대신 빈 공간이 남게 한다.
+ */
+[data-exporting] {
+  padding: 14px 14px 48px;
+}
+
+[data-exporting] [data-no-export] {
+  display: none !important;
+}
+
+/* ---- 결과 카드 등장 ---- */
+@keyframes ticket-in {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateY(-75deg) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateY(0deg) translateY(0);
+  }
+}
+
+.ticket-in {
+  animation: ticket-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  transform-origin: left center;
+}
+
+/* ---- 룰렛 ---- */
+.wheel-spin {
+  transition: transform 4.2s cubic-bezier(0.12, 0.72, 0.12, 1);
+}
+
+@keyframes pointer-tick {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(-11deg);
+  }
+}
+
+.pointer-ticking {
+  animation: pointer-tick 0.11s linear infinite;
+  transform-origin: top center;
+}
+
+/* ---- 컨페티 ---- */
+@keyframes confetti-fall {
+  from {
+    opacity: 1;
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(var(--drift, 0), 106vh, 0) rotate(var(--spin, 540deg));
+  }
+}
+
+.confetti-piece {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2.4s ease-in-out infinite;
+}
