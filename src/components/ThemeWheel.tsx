@@ -56,13 +56,14 @@ export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, er
     let delta = wanted - current;
     if (delta <= 0) delta += 360;
 
-    // 동작 줄이기를 켠 사람에게는 여러 바퀴를 돌리지 않는다. delta 만 움직이므로
-    // 최대 한 바퀴 미만으로 결과 칸까지만 이동한다. (지속 시간은 CSS 가 줄인다)
-    const extraTurns = reducedMotion ? 0 : 5;
+    // 온전한 바퀴 수를 반드시 더한다. delta 만 움직이면 바로 옆 칸이 걸렸을 때
+    // 45도만 까딱하고 끝나 룰렛처럼 보이지 않는다.
+    // 동작 줄이기를 켰으면 바퀴 수를 줄이되 0 으로 두지는 않는다.
+    const turns = reducedMotion ? 2 : 5;
 
     setLanded(null);
     setPending(target);
-    setRotation(rotation + 360 * extraTurns + delta);
+    setRotation(rotation + 360 * turns + delta);
   };
 
   const picked = landed === null ? null : themes[landed];

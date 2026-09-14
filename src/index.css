@@ -85,8 +85,13 @@ button {
 }
 
 /* ---- 룰렛 ---- */
+/*
+ * 감속 곡선은 easeOutCubic. 앞쪽에 지나치게 쏠린 곡선을 쓰면 초반에 거의 다
+ * 돌아버리고 남은 몇 퍼센트를 몇 초에 걸쳐 기어가서, 멈춘 것처럼 보이는데도
+ * 결과가 안 나오는 구간이 길게 생긴다.
+ */
 .wheel-spin {
-  transition: transform 4.2s cubic-bezier(0.12, 0.72, 0.12, 1);
+  transition: transform 3.8s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 @keyframes pointer-tick {
@@ -153,8 +158,9 @@ button {
     animation: none;
   }
 
+  /* 두 바퀴를 도는 만큼 시간도 준다. 1.2초면 두 바퀴가 너무 급하다. */
   .wheel-spin {
-    transition: transform 1.2s ease-out;
+    transition: transform 2.4s cubic-bezier(0.33, 1, 0.68, 1);
   }
 
   /* 카드를 3D 로 뒤집지 않고 제자리에서 나타나기만 하게 한다. */
