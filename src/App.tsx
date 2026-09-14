@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Assignment, Member, Theme } from './types';
 import { THEMES } from './data/themes';
-import { assignCharacters } from './lib/assign';
+import { assignCharacters, castBlocker } from './lib/assign';
 import { usePersistedState } from './lib/storage';
 import MemberSetup from './components/MemberSetup';
 import ThemeWheel from './components/ThemeWheel';
@@ -34,6 +34,26 @@ export default function App() {
   const [matchGender, setMatchGender] = usePersistedState('cosplay.matchGender', true);
 
   const members = useMemo(() => storedMembers.map(normalize), [storedMembers]);
+
+  /**
+   * 지금 명단으로 실제 배정이 되는 주제만 룰렛에 올린다.
+   * 돌리고 나서 "인원이 부족해요" 를 보여 주는 대신 아예 후보에서 뺀다.
+   */
+  const { castable, blocked } = useMemo(() => {
+    const castable: Theme[] = [];
+    const blocked: { theme: Theme; reason: string }[] = [];
+    for (const t of THEMES) {
+      const reason = castBlocker({
+        members,
+        characters: t.characters,
+        parkSafeOnly,
+        matchGender,
+      });
+      if (reason === null) castable.push(t);
+      else blocked.push({ theme: t, reason });
+    }
+    return { castable, blocked };
+  }, [members, parkSafeOnly, matchGender]);
 
   const [step, setStep] = useState<Step>('setup');
   const [theme, setTheme] = useState<Theme | null>(null);
@@ -165,9 +185,11 @@ export default function App() {
 
         {step === 'wheel' && (
           <ThemeWheel
-            themes={THEMES}
+            themes={castable}
+            blockedCount={blocked.length}
             parkSafeOnly={parkSafeOnly}
             onConfirm={confirmTheme}
+            onSpin={() => setError(null)}
             onBack={() => goTo('setup')}
             error={error}
           />

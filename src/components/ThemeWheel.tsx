@@ -3,10 +3,15 @@ import type { Theme } from '../types';
 import { usePrefersReducedMotion } from '../lib/motion';
 
 interface Props {
+  /** 지금 명단으로 실제 배정이 되는 주제만 넘어온다. */
   themes: Theme[];
+  /** 인원이 맞지 않아 빠진 주제 수 */
+  blockedCount: number;
   /** 안전 필터가 켜져 있으면 실제로 뽑을 수 있는 캐릭터 수가 줄어든다. */
   parkSafeOnly: boolean;
   onConfirm: (theme: Theme) => void;
+  /** 다시 돌리면 지난 실패 안내는 더 이상 유효하지 않다. */
+  onSpin: () => void;
   onBack: () => void;
   error: string | null;
 }
@@ -29,13 +34,26 @@ function polar(deg: number, r: number) {
 }
 
 function sectorPath(start: number, end: number) {
+  // 주제가 하나뿐이면 부채꼴이 아니라 원 하나다. 시작점과 끝점이 같아져
+  // 호가 그려지지 않으므로 반원 두 개로 원을 만든다.
+  if (end - start >= 360) {
+    return `M ${CX} ${CY - R} A ${R} ${R} 0 1 1 ${CX} ${CY + R} A ${R} ${R} 0 1 1 ${CX} ${CY - R} Z`;
+  }
   const s = polar(start, R);
   const e = polar(end, R);
   const largeArc = end - start > 180 ? 1 : 0;
   return `M ${CX} ${CY} L ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)} Z`;
 }
 
-export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, error }: Props) {
+export default function ThemeWheel({
+  themes,
+  blockedCount,
+  parkSafeOnly,
+  onConfirm,
+  onSpin,
+  onBack,
+  error,
+}: Props) {
   const [rotation, setRotation] = useState(0);
   const [pending, setPending] = useState<number | null>(null);
   const [landed, setLanded] = useState<number | null>(null);
@@ -45,7 +63,8 @@ export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, er
   const spinning = pending !== null;
 
   const spin = () => {
-    if (spinning) return;
+    if (spinning || themes.length === 0) return;
+    onSpin();
     const target = Math.floor(Math.random() * themes.length);
 
     // 바늘은 12시에 고정이므로, 당첨 섹터의 중심각만큼 되돌려 놓으면 그 섹터가 위로 온다.
@@ -68,11 +87,39 @@ export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, er
 
   const picked = landed === null ? null : themes[landed];
 
+  if (themes.length === 0) {
+    return (
+      <div className="space-y-5">
+        <header className="text-center">
+          <h2 className="text-2xl font-black">돌릴 수 있는 주제가 없어요</h2>
+        </header>
+        <p className="rounded-3xl border border-neon-pink/40 bg-neon-pink/10 px-5 py-4 text-sm leading-relaxed text-neon-pink">
+          지금 명단을 감당할 수 있는 주제가 하나도 없습니다. 명단을 줄이거나, 설정에서{' '}
+          <b>성별에 맞춰 배정</b>이나 <b>놀이공원용으로 안전한 캐릭터만</b>을 꺼 보세요. 둘 중
+          하나만 꺼도 후보가 크게 늘어납니다.
+        </p>
+        <button
+          type="button"
+          onClick={onBack}
+          className="w-full rounded-3xl bg-linear-to-r from-neon-pink to-neon-yellow py-4 text-lg font-black text-night-950 shadow-xl shadow-neon-pink/25 transition active:scale-[0.99]"
+        >
+          ← 명단·설정 고치기
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <header className="text-center">
         <h2 className="text-2xl font-black">오늘의 주제는?</h2>
         <p className="mt-1 text-sm text-white/55">버튼을 눌러 돌려 주세요. 아이가 눌러도 좋아요.</p>
+        {blockedCount > 0 && (
+          <p className="mt-2 text-xs text-white/40">
+            지금 명단으로 배정이 안 되는 주제 {blockedCount}개는 빼뒀어요. 어떤 게 나와도
+            캐스팅됩니다.
+          </p>
+        )}
       </header>
 
       <div className="relative mx-auto w-full max-w-[340px]">

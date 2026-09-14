@@ -23,6 +23,23 @@ export interface Shortage {
   have: number;
 }
 
+/**
+ * 이 명단을 이 캐릭터 목록으로 배정할 수 있는가.
+ *
+ * 룰렛에 올릴 주제를 거르는 데 쓴다. 돌리고 나서야 "인원이 부족해요" 를 보여 주는 것보다
+ * 애초에 안 되는 주제를 빼는 편이 낫다. 배정 가능하면 실제 추첨도 반드시 성공한다 —
+ * solve 가 완전 탐색이라 해가 있으면 섞인 순서와 무관하게 찾아내기 때문이다.
+ */
+export function canCast(input: Omit<AssignInput, 'keep' | 'exclude'>): boolean {
+  return assignCharacters(input).ok;
+}
+
+/** 배정이 안 되는 이유. 주제를 왜 뺐는지 알려 줄 때 쓴다. */
+export function castBlocker(input: Omit<AssignInput, 'keep' | 'exclude'>): string | null {
+  const res = assignCharacters(input);
+  return res.ok ? null : res.message;
+}
+
 /** 이 구성원이 맡을 수 있는 배역인가. 후보 선정과 부족 진단이 같은 기준을 쓰도록 모아 둔다. */
 function canPlay(character: Character, member: Member, matchGender: boolean): boolean {
   if (!character.fits.includes(member.kind)) return false;
