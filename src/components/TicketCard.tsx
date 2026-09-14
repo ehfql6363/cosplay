@@ -1,6 +1,7 @@
 import type { Character, Member } from '../types';
 import { DIFFICULTY_LABEL, KIND_LABEL, PARK_RISK_LABEL } from '../types';
 import { imageSearchUrl } from '../lib/share';
+import { characterImage } from '../lib/characterImages';
 
 interface Props {
   member: Member;
@@ -20,6 +21,7 @@ export default function TicketCard({
   onReroll,
 }: Props) {
   const isAdult = member.kind === 'adult';
+  const photo = characterImage(character.name);
 
   return (
     <article
@@ -30,6 +32,15 @@ export default function TicketCard({
         <div
           className="absolute inset-0 rounded-3xl border-2 border-neon-yellow/70"
           aria-hidden
+        />
+      )}
+
+      {photo && (
+        <img
+          src={photo}
+          alt={`${character.name} 참고 이미지`}
+          loading="lazy"
+          className="h-40 w-full bg-night-950 object-cover"
         />
       )}
 
