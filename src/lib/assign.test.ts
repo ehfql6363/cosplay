@@ -15,7 +15,7 @@ const char = (
   fits: MemberKind[],
   parkRisk: Character['parkRisk'] = null,
   gender: Gender | null = null,
-): Character => ({ id, name: id, fits, gender, items: [], parkRisk });
+): Character => ({ id, name: id, fits, gender, look: '', difficulty: 1, items: [], parkRisk });
 
 const ANY: MemberKind[] = ['adult', 'child'];
 

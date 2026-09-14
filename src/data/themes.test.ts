@@ -17,11 +17,15 @@ describe('주제 데이터', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('모든 캐릭터에 담당 구분과 준비물이 있다', () => {
+  it('모든 캐릭터에 담당 구분·준비물·룩 설명이 있다', () => {
     for (const theme of THEMES) {
       for (const ch of theme.characters) {
-        expect(ch.fits.length, `${theme.name} / ${ch.name}`).toBeGreaterThan(0);
-        expect(ch.items.length, `${theme.name} / ${ch.name}`).toBeGreaterThan(0);
+        const where = `${theme.name} / ${ch.name}`;
+        expect(ch.fits.length, where).toBeGreaterThan(0);
+        expect(ch.items.length, where).toBeGreaterThan(0);
+        // 한 줄 설명이 비어 있으면 "그래서 어떻게 보여야 하는데?" 가 안 풀린다.
+        expect(ch.look.trim().length, where).toBeGreaterThan(8);
+        expect([1, 2, 3], where).toContain(ch.difficulty);
       }
     }
   });

@@ -18,9 +18,18 @@ export interface Member {
  */
 export type ParkRisk = 'mask' | 'prop' | null;
 
+/** 1 집에 있는 옷으로 / 2 소품 한둘 필요 / 3 공들여야 함 */
+export type Difficulty = 1 | 2 | 3;
+
 export interface Character {
   id: string;
   name: string;
+  /**
+   * 이 배역으로 보이려면 무엇이 핵심인지 한 줄로.
+   * 준비물 목록만으로는 "그래서 어떻게 보여야 하는데?" 가 안 풀린다.
+   */
+  look: string;
+  difficulty: Difficulty;
   /** 이 캐릭터를 맡을 수 있는 구성원 구분 (최소 하나) */
   fits: MemberKind[];
   /**
@@ -55,6 +64,12 @@ export const KIND_LABEL: Record<MemberKind, string> = {
 export const GENDER_LABEL: Record<Gender, string> = {
   male: '남',
   female: '여',
+};
+
+export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  1: '집에 있는 옷으로',
+  2: '소품 한둘 필요',
+  3: '공들여야 함',
 };
 
 export const PARK_RISK_LABEL: Record<Exclude<ParkRisk, null>, string> = {

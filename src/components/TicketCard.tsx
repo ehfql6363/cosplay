@@ -1,5 +1,6 @@
 import type { Character, Member } from '../types';
-import { KIND_LABEL, PARK_RISK_LABEL } from '../types';
+import { DIFFICULTY_LABEL, KIND_LABEL, PARK_RISK_LABEL } from '../types';
+import { imageSearchUrl } from '../lib/share';
 
 interface Props {
   member: Member;
@@ -43,9 +44,11 @@ export default function TicketCard({
         </span>
       </div>
 
-      <p className="px-5 pt-2 pb-5 text-3xl leading-tight font-black text-neon-yellow">
+      <p className="px-5 pt-2 text-3xl leading-tight font-black text-neon-yellow">
         {character.name}
       </p>
+      {/* 준비물만 봐서는 어떻게 보여야 하는지 감이 안 오므로 한 줄로 짚어 준다. */}
+      <p className="px-5 pt-2 pb-5 text-sm leading-relaxed text-white/70">{character.look}</p>
 
       {/* 절취선 */}
       <div className="relative">
@@ -55,7 +58,16 @@ export default function TicketCard({
       </div>
 
       <div className="px-5 py-4">
-        <p className="text-xs font-bold tracking-wide text-white/40">준비물</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-bold tracking-wide text-white/40">준비물</p>
+          <p className="flex items-center gap-1 text-xs text-white/45">
+            <span aria-hidden className="tracking-tight">
+              {'●'.repeat(character.difficulty)}
+              <span className="text-white/15">{'●'.repeat(3 - character.difficulty)}</span>
+            </span>
+            {DIFFICULTY_LABEL[character.difficulty]}
+          </p>
+        </div>
         <ul className="mt-2 flex flex-wrap gap-1.5">
           {character.items.map((item) => (
             <li
@@ -73,7 +85,16 @@ export default function TicketCard({
           </p>
         )}
 
-        <div className="mt-4 flex gap-2" data-no-export>
+        <div className="mt-4 space-y-2" data-no-export>
+          <a
+            href={imageSearchUrl(character.name)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-neon-cyan/10 px-3 py-2 text-sm font-bold text-neon-cyan transition hover:bg-neon-cyan/20"
+          >
+            🔍 {character.name} 코스프레 사진 보기
+          </a>
+          <div className="flex gap-2">
           <button
             type="button"
             onClick={onToggleLock}
@@ -94,6 +115,7 @@ export default function TicketCard({
           >
             🎲 다시
           </button>
+          </div>
         </div>
       </div>
     </article>

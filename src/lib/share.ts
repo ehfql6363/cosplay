@@ -9,12 +9,25 @@ export function formatResult(theme: Theme, members: Member[], assignments: Assig
   const lines = members.flatMap((m) => {
     const ch = byId.get(picked.get(m.id) ?? '');
     if (!ch) return [];
-    return [`· ${m.name} (${KIND_LABEL[m.kind]}) → ${ch.name}`, `   준비물: ${ch.items.join(', ')}`];
+    return [
+      `· ${m.name} (${KIND_LABEL[m.kind]}) → ${ch.name}`,
+      `   ${ch.look}`,
+      `   준비물: ${ch.items.join(', ')}`,
+    ];
   });
 
   return [`🎭 오늘의 코스프레 캐스팅`, `주제: ${theme.name} ${theme.emoji}`, '', ...lines].join(
     '\n',
   );
+}
+
+/**
+ * 실제 코스프레 사진을 바로 보게 해 주는 링크.
+ * 글로 아무리 설명해도 남이 한 사진 한 장만 못하다.
+ */
+export function imageSearchUrl(characterName: string): string {
+  const query = encodeURIComponent(`${characterName} 코스프레`);
+  return `https://www.google.com/search?tbm=isch&q=${query}`;
 }
 
 /** navigator.clipboard 가 막힌 환경(비 HTTPS 등)을 위한 폴백 포함 복사. */
