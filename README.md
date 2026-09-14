@@ -55,10 +55,6 @@ npm run build   # 타입 검사 후 프로덕션 빌드
 (`.github/workflows/deploy.yml`). 저장소 **Settings → Pages → Source** 를 **GitHub Actions**
 로 한 번 바꿔 주어야 첫 배포가 됩니다.
 
-아직 `package-lock.json` 이 저장소에 없어서 CI 가 `npm install` 을 씁니다. 한 번
-`npm install` 을 돌려 나온 lockfile 을 커밋하면 빌드가 재현 가능해지고, 그때
-워크플로의 `npm install --no-audit --no-fund` 를 `npm ci` 로 바꾸면 됩니다.
-
 Pages 는 `/cosplay/` 경로로 서빙되므로 `vite.config.ts` 의 `base` 가 거기에 맞춰져 있습니다.
 다른 곳에 올릴 때는 `BASE_PATH=/ npm run build` 처럼 덮어쓰면 됩니다.
 
