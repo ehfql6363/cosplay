@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Assignment, Member, Theme } from './types';
-import { THEMES } from './data/themes';
 import { assignCharacters, castBlocker } from './lib/assign';
+import { loadThemes } from './lib/themeStore';
 import { usePersistedState } from './lib/storage';
 import MemberSetup from './components/MemberSetup';
 import ThemeWheel from './components/ThemeWheel';
@@ -28,7 +28,9 @@ function normalize(member: Member): Member {
   };
 }
 
-export default function App() {
+export default function App({ onOpenAdmin }: { onOpenAdmin: () => void }) {
+  // 관리 페이지에서 고친 주제가 있으면 그쪽을 쓴다. 없으면 기본 주제.
+  const [themes] = useState(() => loadThemes());
   const [storedMembers, setMembers] = usePersistedState<Member[]>('cosplay.members', []);
   const [parkSafeOnly, setParkSafeOnly] = usePersistedState('cosplay.parkSafeOnly', true);
   const [matchGender, setMatchGender] = usePersistedState('cosplay.matchGender', true);
@@ -42,7 +44,7 @@ export default function App() {
   const { castable, blocked } = useMemo(() => {
     const castable: Theme[] = [];
     const blocked: { theme: Theme; reason: string }[] = [];
-    for (const t of THEMES) {
+    for (const t of themes) {
       const reason = castBlocker({
         members,
         characters: t.characters,
@@ -53,7 +55,7 @@ export default function App() {
       else blocked.push({ theme: t, reason });
     }
     return { castable, blocked };
-  }, [members, parkSafeOnly, matchGender]);
+  }, [themes, members, parkSafeOnly, matchGender]);
 
   const [step, setStep] = useState<Step>('setup');
   const [theme, setTheme] = useState<Theme | null>(null);
@@ -213,8 +215,19 @@ export default function App() {
         )}
       </main>
 
-      <footer className="pt-8 text-center text-xs leading-relaxed text-white/25">
-        놀이공원마다 코스튬 입장 규정이 다릅니다. 방문 전 해당 파크 공지를 확인해 주세요.
+      <footer className="space-y-3 pt-8 text-center">
+        {step === 'setup' && (
+          <button
+            type="button"
+            onClick={onOpenAdmin}
+            className="rounded-xl px-4 py-2 text-sm text-white/40 transition hover:text-white"
+          >
+            🛠 주제 관리
+          </button>
+        )}
+        <p className="text-xs leading-relaxed text-white/25">
+          놀이공원마다 코스튬 입장 규정이 다릅니다. 방문 전 해당 파크 공지를 확인해 주세요.
+        </p>
       </footer>
     </div>
   );
