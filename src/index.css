@@ -42,13 +42,12 @@ button {
   font-family: inherit;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+@keyframes ticket-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -138,4 +137,29 @@ button {
 
 .glow-pulse {
   animation: glow-pulse 2.4s ease-in-out infinite;
+}
+
+/*
+ * 동작 줄이기 설정 존중. 위의 기본 규칙들을 덮어써야 하므로 파일 끝에 둔다.
+ * (미디어 쿼리는 특이도를 올려 주지 않아서, 앞에 두면 뒤 규칙에 밀린다.)
+ *
+ * 모든 모션을 일괄로 끄면 룰렛이 결과로 툭 점프해 이 앱의 핵심 재미가 사라진다.
+ * 회전은 남기되 짧고 완만하게 하고(바퀴 수는 ThemeWheel 이 줄인다),
+ * 반복·3D·흩날림처럼 순수한 장식만 끈다.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .pointer-ticking,
+  .glow-pulse {
+    animation: none;
+  }
+
+  .wheel-spin {
+    transition: transform 1.2s ease-out;
+  }
+
+  /* 카드를 3D 로 뒤집지 않고 제자리에서 나타나기만 하게 한다. */
+  .ticket-in {
+    animation-name: ticket-fade;
+    animation-duration: 0.3s;
+  }
 }

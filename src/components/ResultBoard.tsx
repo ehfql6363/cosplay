@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import type { Assignment, Member, Theme } from '../types';
 import { copyText, downloadDataUrl, formatResult } from '../lib/share';
+import { usePrefersReducedMotion } from '../lib/motion';
 import TicketCard from './TicketCard';
 import Confetti from './Confetti';
 
@@ -41,6 +42,7 @@ export default function ResultBoard({
   const sheetRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>(null);
   const [saving, setSaving] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   const charById = new Map(theme.characters.map((c) => [c.id, c]));
   const pickedBy = new Map(assignments.map((a) => [a.memberId, a.characterId]));
@@ -84,7 +86,8 @@ export default function ResultBoard({
 
   return (
     <div className="space-y-5">
-      {stagger && <Confetti seed={revealKey} />}
+      {/* 컨페티는 순수한 장식이라 동작 줄이기를 켜면 띄우지 않는다. */}
+      {stagger && !reducedMotion && <Confetti seed={revealKey} />}
 
       <div ref={sheetRef} className="space-y-4 rounded-3xl">
         <header className="rounded-3xl border border-white/10 bg-night-900/70 px-5 py-4 text-center">

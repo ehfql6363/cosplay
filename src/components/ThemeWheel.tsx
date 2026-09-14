@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Theme } from '../types';
+import { usePrefersReducedMotion } from '../lib/motion';
 
 interface Props {
   themes: Theme[];
@@ -38,6 +39,7 @@ export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, er
   const [rotation, setRotation] = useState(0);
   const [pending, setPending] = useState<number | null>(null);
   const [landed, setLanded] = useState<number | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   const step = 360 / themes.length;
   const spinning = pending !== null;
@@ -54,9 +56,13 @@ export default function ThemeWheel({ themes, parkSafeOnly, onConfirm, onBack, er
     let delta = wanted - current;
     if (delta <= 0) delta += 360;
 
+    // 동작 줄이기를 켠 사람에게는 여러 바퀴를 돌리지 않는다. delta 만 움직이므로
+    // 최대 한 바퀴 미만으로 결과 칸까지만 이동한다. (지속 시간은 CSS 가 줄인다)
+    const extraTurns = reducedMotion ? 0 : 5;
+
     setLanded(null);
     setPending(target);
-    setRotation(rotation + 360 * 5 + delta);
+    setRotation(rotation + 360 * extraTurns + delta);
   };
 
   const picked = landed === null ? null : themes[landed];
