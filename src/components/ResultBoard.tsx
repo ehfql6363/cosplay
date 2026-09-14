@@ -107,6 +107,7 @@ export default function ResultBoard({
                 key={`${m.id}:${character.id}`}
                 member={m}
                 character={character}
+                themeId={theme.id}
                 locked={lockedSet.has(m.id)}
                 delayMs={stagger ? Math.min(i, 9) * 90 : 0}
                 onToggleLock={() => onToggleLock(m.id)}

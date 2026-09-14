@@ -1,17 +1,43 @@
 # 캐릭터 참고 이미지
 
 이 폴더에 **캐릭터 이름 그대로** 파일을 넣으면 결과 카드에 자동으로 붙습니다.
-코드는 고칠 필요 없습니다.
+코드는 고칠 필요가 없습니다.
 
 ```
 src/assets/characters/피카츄.png
 src/assets/characters/캡틴 아메리카.jpg
 ```
 
+## 제일 쉬운 방법
+
+다운로드 폴더에 사진을 모아 두고 스크립트를 돌리면 이름을 알아서 맞춰 줍니다.
+"엘사 코스프레 (3).jpg" 같은 이름도 알아봅니다.
+
+```bash
+node scripts/prepare-images.mjs --list        # 아직 없는 캐릭터 보기
+node scripts/prepare-images.mjs ~/Downloads --dry   # 옮기지 않고 확인만
+node scripts/prepare-images.mjs ~/Downloads   # 실제로 정리
+```
+
+`npm i -D sharp` 를 해 두면 가로 720px 로 줄이고 압축까지 합니다.
+
+## 규칙
+
 - 확장자는 `png` `jpg` `jpeg` `webp` `avif` `gif` 를 받습니다.
-- 넣지 않은 캐릭터는 이미지 없이 지금처럼 나옵니다. 전부 채울 필요 없어요.
+- 넣지 않은 캐릭터는 사진 대신 의상 미리보기 도형이 나옵니다. 전부 채울 필요 없어요.
 - 카드에서 가로로 꽉 차게, 높이 160px 로 잘려 보입니다. 인물이 가운데 오는 이미지가 좋습니다.
-- 파일 용량이 크면 사이트가 무거워집니다. 한 장에 200KB 이하를 권합니다.
+- 한 장에 300KB 이하를 권합니다.
+
+### 이름이 겹치는 캐릭터
+
+주제가 다른데 이름이 같은 캐릭터는 **주제 폴더**에 넣어야 서로 구분됩니다.
+
+```
+src/assets/characters/ghibli/키키.png
+src/assets/characters/sanrio/키키.png
+src/assets/characters/hero/로빈.png
+src/assets/characters/onepiece/로빈.png
+```
 
 ## 저작권
 
@@ -20,7 +46,7 @@ src/assets/characters/캡틴 아메리카.jpg
 
 ## 파일명 목록 (총 115개)
 
-### 🏰 디즈니·픽사
+### 🏰 디즈니·픽사  `disney`
 
 ```
 엘사.png
@@ -41,11 +67,11 @@ src/assets/characters/캡틴 아메리카.jpg
 니모.png
 ```
 
-### 🌿 지브리
+### 🌿 지브리  `ghibli`
 
 ```
 치히로.png
-키키.png
+ghibli/키키.png   ← 이름이 겹쳐 주제 폴더 필요
 산.png
 시타.png
 소피.png
@@ -64,7 +90,7 @@ src/assets/characters/캡틴 아메리카.jpg
 가오나시.png
 ```
 
-### ⚡ 포켓몬
+### ⚡ 포켓몬  `pokemon`
 
 ```
 지우.png
@@ -81,14 +107,14 @@ src/assets/characters/캡틴 아메리카.jpg
 뮤츠.png
 ```
 
-### 🦸 슈퍼히어로
+### 🦸 슈퍼히어로  `hero`
 
 ```
 캡틴 아메리카.png
 헐크.png
 슈퍼맨.png
 팔콘.png
-로빈.png
+hero/로빈.png   ← 이름이 겹쳐 주제 폴더 필요
 원더우먼.png
 슈퍼걸.png
 미즈 마블.png
@@ -102,7 +128,7 @@ src/assets/characters/캡틴 아메리카.jpg
 토르.png
 ```
 
-### 🪄 해리포터
+### 🪄 해리포터  `potter`
 
 ```
 해리.png
@@ -120,7 +146,7 @@ src/assets/characters/캡틴 아메리카.jpg
 도비.png
 ```
 
-### 🍄 슈퍼마리오
+### 🍄 슈퍼마리오  `mario`
 
 ```
 마리오.png
@@ -138,7 +164,7 @@ src/assets/characters/캡틴 아메리카.jpg
 굼바.png
 ```
 
-### 🏴‍☠️ 원피스
+### 🏴‍☠️ 원피스  `onepiece`
 
 ```
 루피.png
@@ -151,14 +177,14 @@ src/assets/characters/캡틴 아메리카.jpg
 모모노스케.png
 나미.png
 비비.png
-로빈.png
+onepiece/로빈.png   ← 이름이 겹쳐 주제 폴더 필요
 한코크.png
 쵸파.png
 조로.png
 브룩.png
 ```
 
-### 🎀 산리오
+### 🎀 산리오  `sanrio`
 
 ```
 헬로키티.png
@@ -170,7 +196,7 @@ src/assets/characters/캡틴 아메리카.jpg
 배드바츠마루.png
 한교동.png
 구데타마.png
-키키.png
+sanrio/키키.png   ← 이름이 겹쳐 주제 폴더 필요
 라라.png
 아기 판다.png
 ```

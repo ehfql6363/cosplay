@@ -2,10 +2,14 @@ import type { Character, Member } from '../types';
 import { DIFFICULTY_LABEL, KIND_LABEL, PARK_RISK_LABEL } from '../types';
 import { imageSearchUrl } from '../lib/share';
 import { characterImage } from '../lib/characterImages';
+import { outfitFor } from '../data/outfits';
+import OutfitPreview from './OutfitPreview';
 
 interface Props {
   member: Member;
   character: Character;
+  /** 이름이 겹치는 캐릭터(로빈·키키)를 가르는 데 쓴다. */
+  themeId: string;
   locked: boolean;
   delayMs: number;
   onToggleLock: () => void;
@@ -15,13 +19,16 @@ interface Props {
 export default function TicketCard({
   member,
   character,
+  themeId,
   locked,
   delayMs,
   onToggleLock,
   onReroll,
 }: Props) {
   const isAdult = member.kind === 'adult';
-  const photo = characterImage(character.name);
+  const photo = characterImage(themeId, character.name);
+  // 참고 사진이 있으면 그쪽이 훨씬 직관적이므로 미리보기 도형은 접는다.
+  const outfit = photo ? null : outfitFor(themeId, character.name);
 
   return (
     <article
@@ -55,11 +62,19 @@ export default function TicketCard({
         </span>
       </div>
 
-      <p className="px-5 pt-2 text-3xl leading-tight font-black text-neon-yellow">
-        {character.name}
-      </p>
-      {/* 준비물만 봐서는 어떻게 보여야 하는지 감이 안 오므로 한 줄로 짚어 준다. */}
-      <p className="px-5 pt-2 pb-5 text-sm leading-relaxed text-white/70">{character.look}</p>
+      <div className="flex items-start gap-3 px-5 pt-2 pb-5">
+        <div className="min-w-0 flex-1">
+          <p className="text-3xl leading-tight font-black text-neon-yellow">{character.name}</p>
+          {/* 준비물만 봐서는 어떻게 보여야 하는지 감이 안 오므로 한 줄로 짚어 준다. */}
+          <p className="pt-2 text-sm leading-relaxed text-white/70">{character.look}</p>
+        </div>
+        {outfit && (
+          <OutfitPreview
+            outfit={outfit}
+            className="mt-1 h-20 w-14 shrink-0 rounded-xl bg-white/5 p-1"
+          />
+        )}
+      </div>
 
       {/* 절취선 */}
       <div className="relative">
