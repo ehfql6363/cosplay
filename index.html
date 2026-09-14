@@ -9,10 +9,13 @@
       content="모임에서 코스프레 주제를 뽑고 어른·아이에 맞춰 캐릭터를 배정해 주는 랜덤 캐스팅 도구"
     />
     <title>오늘의 코스프레 캐스팅</title>
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E"
-    />
+    <!--
+      실제 파일로 넣는다. data: URI 아이콘을 못 읽는 브라우저는 /favicon.ico 를
+      되물어보는데, 그 파일이 없으면 콘솔에 404 가 남는다.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link
       rel="stylesheet"
