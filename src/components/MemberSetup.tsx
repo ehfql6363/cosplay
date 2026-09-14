@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Member, MemberKind } from '../types';
-import { KIND_LABEL } from '../types';
+import type { Gender, Member, MemberKind } from '../types';
+import { GENDER_LABEL, KIND_LABEL } from '../types';
 import { useIdFactory } from '../lib/storage';
 
 interface Props {
@@ -8,18 +8,33 @@ interface Props {
   onChange: (next: Member[]) => void;
   parkSafeOnly: boolean;
   onParkSafeChange: (next: boolean) => void;
+  matchGender: boolean;
+  onMatchGenderChange: (next: boolean) => void;
   onNext: () => void;
 }
+
+const KIND_OPTIONS: { value: MemberKind; label: string }[] = [
+  { value: 'adult', label: '🧑 어른' },
+  { value: 'child', label: '🧒 아이' },
+];
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: 'male', label: '남자' },
+  { value: 'female', label: '여자' },
+];
 
 export default function MemberSetup({
   members,
   onChange,
   parkSafeOnly,
   onParkSafeChange,
+  matchGender,
+  onMatchGenderChange,
   onNext,
 }: Props) {
   const [draft, setDraft] = useState('');
   const [kind, setKind] = useState<MemberKind>('adult');
+  const [gender, setGender] = useState<Gender>('male');
   const newId = useIdFactory();
 
   const adults = members.filter((m) => m.kind === 'adult').length;
@@ -32,16 +47,12 @@ export default function MemberSetup({
       .map((s) => s.trim())
       .filter(Boolean);
     if (names.length === 0) return;
-    onChange([...members, ...names.map((name) => ({ id: newId(), name, kind }))]);
+    onChange([...members, ...names.map((name) => ({ id: newId(), name, kind, gender }))]);
     setDraft('');
   };
 
-  const toggleKind = (id: string) =>
-    onChange(
-      members.map((m) =>
-        m.id === id ? { ...m, kind: m.kind === 'adult' ? 'child' : 'adult' } : m,
-      ),
-    );
+  const update = (id: string, patch: Partial<Member>) =>
+    onChange(members.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   const remove = (id: string) => onChange(members.filter((m) => m.id !== id));
 
@@ -50,7 +61,8 @@ export default function MemberSetup({
       <section className="rounded-3xl border border-white/10 bg-night-900/70 p-5 shadow-xl shadow-black/30">
         <h2 className="text-lg font-bold">누가 함께 가나요?</h2>
         <p className="mt-1 text-sm text-white/55">
-          이름을 넣고 어른·아이만 정해 주세요. 쉼표나 줄바꿈으로 여러 명을 한 번에 넣을 수 있어요.
+          이름을 넣고 어른·아이와 성별만 정해 주세요. 쉼표나 줄바꿈으로 여러 명을 한 번에 넣을 수
+          있어요.
         </p>
 
         <div
@@ -58,20 +70,45 @@ export default function MemberSetup({
           aria-label="추가할 구성원 구분"
           className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-night-800 p-1"
         >
-          {(['adult', 'child'] as const).map((k) => (
+          {KIND_OPTIONS.map((opt) => (
             <button
-              key={k}
+              key={opt.value}
               type="button"
               role="radio"
-              aria-checked={kind === k}
-              onClick={() => setKind(k)}
+              aria-checked={kind === opt.value}
+              onClick={() => setKind(opt.value)}
               className={`rounded-xl px-4 py-2.5 text-sm font-bold transition ${
-                kind === k
+                kind === opt.value
                   ? 'bg-neon-yellow text-night-950 shadow-lg shadow-neon-yellow/20'
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              {k === 'adult' ? '🧑 어른' : '🧒 아이'}
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div
+          role="radiogroup"
+          aria-label="추가할 구성원 성별"
+          className="mt-2 grid grid-cols-2 gap-2 rounded-2xl bg-night-800 p-1"
+        >
+          {GENDER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              role="radio"
+              aria-checked={gender === opt.value}
+              onClick={() => setGender(opt.value)}
+              className={`rounded-xl px-4 py-2.5 text-sm font-bold transition ${
+                gender === opt.value
+                  ? opt.value === 'male'
+                    ? 'bg-violet-400 text-night-950 shadow-lg shadow-violet-400/20'
+                    : 'bg-rose-400 text-night-950 shadow-lg shadow-rose-400/20'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              {opt.label}
             </button>
           ))}
         </div>
@@ -109,19 +146,20 @@ export default function MemberSetup({
               어른 {adults} · 아이 {children}
             </p>
           </div>
+          <p className="mt-1 text-xs text-white/40">배지를 누르면 바꿀 수 있어요.</p>
 
           <ul className="mt-3 space-y-2">
             {members.map((m) => (
               <li
                 key={m.id}
-                className="flex items-center gap-2 rounded-2xl border border-white/10 bg-night-800/70 py-2 pr-2 pl-4"
+                className="flex items-center gap-1.5 rounded-2xl border border-white/10 bg-night-800/70 py-2 pr-2 pl-4"
               >
                 <span className="min-w-0 flex-1 truncate font-semibold">{m.name}</span>
                 <button
                   type="button"
-                  onClick={() => toggleKind(m.id)}
+                  onClick={() => update(m.id, { kind: m.kind === 'adult' ? 'child' : 'adult' })}
                   aria-label={`${m.name} 구분 바꾸기 (현재 ${KIND_LABEL[m.kind]})`}
-                  className={`rounded-xl px-3 py-1.5 text-sm font-bold transition ${
+                  className={`shrink-0 rounded-xl px-2.5 py-1.5 text-sm font-bold transition ${
                     m.kind === 'adult'
                       ? 'bg-neon-cyan/15 text-neon-cyan'
                       : 'bg-neon-lime/15 text-neon-lime'
@@ -131,9 +169,21 @@ export default function MemberSetup({
                 </button>
                 <button
                   type="button"
+                  onClick={() => update(m.id, { gender: m.gender === 'male' ? 'female' : 'male' })}
+                  aria-label={`${m.name} 성별 바꾸기 (현재 ${GENDER_LABEL[m.gender]}자)`}
+                  className={`shrink-0 rounded-xl px-2.5 py-1.5 text-sm font-bold transition ${
+                    m.gender === 'male'
+                      ? 'bg-violet-400/20 text-violet-300'
+                      : 'bg-rose-400/20 text-rose-300'
+                  }`}
+                >
+                  {GENDER_LABEL[m.gender]}
+                </button>
+                <button
+                  type="button"
                   onClick={() => remove(m.id)}
                   aria-label={`${m.name} 삭제`}
-                  className="rounded-xl px-3 py-1.5 text-white/35 transition hover:bg-white/5 hover:text-neon-pink"
+                  className="shrink-0 rounded-xl px-2 py-1.5 text-white/35 transition hover:bg-white/5 hover:text-neon-pink"
                 >
                   ✕
                 </button>
@@ -143,7 +193,23 @@ export default function MemberSetup({
         </section>
       )}
 
-      <section className="rounded-3xl border border-white/10 bg-night-900/70 p-5 shadow-xl shadow-black/30">
+      <section className="space-y-4 rounded-3xl border border-white/10 bg-night-900/70 p-5 shadow-xl shadow-black/30">
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={matchGender}
+            onChange={(e) => onMatchGenderChange(e.target.checked)}
+            className="mt-1 size-5 shrink-0 accent-neon-yellow"
+          />
+          <span>
+            <span className="font-bold">성별에 맞춰 배정</span>
+            <span className="mt-1 block text-sm text-white/55">
+              남자에게 여자 배역이 가지 않게 합니다. 피카츄나 헬로키티처럼 의상에 성별이 드러나지
+              않는 배역은 누구나 맡을 수 있어요. 끄면 성별을 가리지 않고 섞습니다.
+            </span>
+          </span>
+        </label>
+
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"

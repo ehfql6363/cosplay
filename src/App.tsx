@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Assignment, Member, Theme } from './types';
 import { THEMES } from './data/themes';
 import { assignCharacters } from './lib/assign';
@@ -15,9 +15,25 @@ const STEPS: { id: Step; label: string }[] = [
   { id: 'result', label: '캐스팅' },
 ];
 
+/**
+ * 성별이 생기기 전에 저장된 명단을 되살린다. 애써 입력한 이름을 날리지 않으려고
+ * 빠진 값만 채워 넣는다. 성별은 추측할 수 없으므로 일단 남자로 두는데,
+ * 명단 화면에 배지로 바로 보이니 한 번씩 눌러 고치면 된다.
+ */
+function normalize(member: Member): Member {
+  return {
+    ...member,
+    kind: member.kind === 'child' ? 'child' : 'adult',
+    gender: member.gender === 'female' ? 'female' : 'male',
+  };
+}
+
 export default function App() {
-  const [members, setMembers] = usePersistedState<Member[]>('cosplay.members', []);
+  const [storedMembers, setMembers] = usePersistedState<Member[]>('cosplay.members', []);
   const [parkSafeOnly, setParkSafeOnly] = usePersistedState('cosplay.parkSafeOnly', true);
+  const [matchGender, setMatchGender] = usePersistedState('cosplay.matchGender', true);
+
+  const members = useMemo(() => storedMembers.map(normalize), [storedMembers]);
 
   const [step, setStep] = useState<Step>('setup');
   const [theme, setTheme] = useState<Theme | null>(null);
@@ -39,6 +55,7 @@ export default function App() {
         keep,
         exclude: opts.exclude,
         parkSafeOnly,
+        matchGender,
       });
       if (!res.ok) {
         setError(res.message);
@@ -50,7 +67,7 @@ export default function App() {
       if (opts.stagger) setRevealKey((k) => k + 1);
       return true;
     },
-    [members, parkSafeOnly],
+    [members, parkSafeOnly, matchGender],
   );
 
   /** 명단이 바뀌면 이전 캐스팅은 더 이상 유효하지 않다. */
@@ -140,6 +157,8 @@ export default function App() {
             onChange={updateMembers}
             parkSafeOnly={parkSafeOnly}
             onParkSafeChange={setParkSafeOnly}
+            matchGender={matchGender}
+            onMatchGenderChange={setMatchGender}
             onNext={() => goTo('wheel')}
           />
         )}

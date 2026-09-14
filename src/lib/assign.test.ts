@@ -1,14 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { assignCharacters } from './assign';
-import type { Character, Member, MemberKind } from '../types';
+import type { Character, Gender, Member, MemberKind } from '../types';
 
-const member = (id: string, kind: MemberKind): Member => ({ id, name: id, kind });
+/** 성별을 안 쓰는 테스트가 대부분이라 기본값을 둔다. */
+const member = (id: string, kind: MemberKind, gender: Gender = 'male'): Member => ({
+  id,
+  name: id,
+  kind,
+  gender,
+});
 
 const char = (
   id: string,
   fits: MemberKind[],
   parkRisk: Character['parkRisk'] = null,
-): Character => ({ id, name: id, fits, items: [], parkRisk });
+  gender: Gender | null = null,
+): Character => ({ id, name: id, fits, gender, items: [], parkRisk });
 
 const ANY: MemberKind[] = ['adult', 'child'];
 
@@ -98,7 +105,7 @@ describe('assignCharacters', () => {
 
     expect(res.ok).toBe(false);
     if (res.ok) return;
-    expect(res.shortages).toContainEqual({ kind: 'child', need: 2, have: 1 });
+    expect(res.shortages).toContainEqual({ kind: 'child', gender: null, need: 2, have: 1 });
     expect(res.message).toContain('아이');
   });
 
@@ -139,6 +146,83 @@ describe('assignCharacters', () => {
       if (res.ok) seen.add(res.assignments.map((a) => a.characterId).join(','));
     }
     expect(seen.size).toBeGreaterThan(1);
+  });
+
+  it('matchGender 를 켜면 배역 성별을 어기지 않는다', () => {
+    const members = [member('남', 'adult', 'male'), member('여', 'adult', 'female')];
+    const characters = [
+      char('남자역', ANY, null, 'male'),
+      char('여자역', ANY, null, 'female'),
+      char('아무나', ANY, null, null),
+    ];
+
+    for (let seed = 0; seed < 50; seed++) {
+      const res = assignCharacters({ members, characters, matchGender: true, rng: seeded(seed) });
+      expect(res.ok).toBe(true);
+      if (!res.ok) return;
+      const map = new Map(res.assignments.map((a) => [a.memberId, a.characterId]));
+      expect(map.get('남')).not.toBe('여자역');
+      expect(map.get('여')).not.toBe('남자역');
+    }
+  });
+
+  it('성별 없는 배역은 누구나 맡을 수 있다', () => {
+    const members = [member('남', 'adult', 'male'), member('여', 'adult', 'female')];
+    // 겸용 배역 두 개뿐이라, 성별을 가렸다면 배정이 불가능했을 것이다.
+    const characters = [char('아무나1', ANY, null, null), char('아무나2', ANY, null, null)];
+
+    const res = assignCharacters({ members, characters, matchGender: true, rng: seeded(4) });
+
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(new Set(res.assignments.map((a) => a.characterId)).size).toBe(2);
+  });
+
+  it('matchGender 가 꺼져 있으면 배역 성별을 무시한다', () => {
+    const members = [member('남', 'adult', 'male')];
+    const characters = [char('여자역', ANY, null, 'female')];
+
+    const res = assignCharacters({ members, characters, rng: seeded(1) });
+
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.assignments[0].characterId).toBe('여자역');
+  });
+
+  it('성별 배역이 모자라면 어느 쪽이 부족한지 알려준다', () => {
+    const members = [member('여1', 'adult', 'female'), member('여2', 'adult', 'female')];
+    const characters = [char('여자역', ANY, null, 'female'), char('남자역', ANY, null, 'male')];
+
+    const res = assignCharacters({ members, characters, matchGender: true, rng: seeded(1) });
+
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.shortages).toContainEqual({ kind: 'adult', gender: 'female', need: 2, have: 1 });
+    expect(res.message).toContain('어른 여자');
+  });
+
+  it('구분과 성별 제약이 동시에 걸려도 풀어낸다', () => {
+    // 겸용 배역이 하나뿐이라, 그것을 남자 어른에게 주면 남자 아이가 막힌다.
+    const members = [
+      member('남어른', 'adult', 'male'),
+      member('남아이', 'child', 'male'),
+      member('여아이', 'child', 'female'),
+    ];
+    const characters = [
+      char('어른남자역', ['adult'], null, 'male'),
+      char('아이겸용', ['child'], null, null),
+      char('아이남자역', ['child'], null, 'male'),
+    ];
+
+    for (let seed = 0; seed < 50; seed++) {
+      const res = assignCharacters({ members, characters, matchGender: true, rng: seeded(seed) });
+      expect(res.ok).toBe(true);
+      if (!res.ok) return;
+      const map = new Map(res.assignments.map((a) => [a.memberId, a.characterId]));
+      expect(map.get('남어른')).toBe('어른남자역');
+      expect(map.get('여아이')).toBe('아이겸용');
+      expect(map.get('남아이')).toBe('아이남자역');
+    }
   });
 
   it('명단이 비어 있으면 빈 결과를 돌려준다', () => {

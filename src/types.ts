@@ -1,10 +1,13 @@
-/** 모임 구성원 구분. 캐릭터 배정의 유일한 하드 제약이다. */
+/** 모임 구성원 구분. 어른이 아이 배역을 맡는 일을 막는다. */
 export type MemberKind = 'adult' | 'child';
+
+export type Gender = 'male' | 'female';
 
 export interface Member {
   id: string;
   name: string;
   kind: MemberKind;
+  gender: Gender;
 }
 
 /**
@@ -20,6 +23,12 @@ export interface Character {
   name: string;
   /** 이 캐릭터를 맡을 수 있는 구성원 구분 (최소 하나) */
   fits: MemberKind[];
+  /**
+   * 배역의 성별. null 은 성별을 가리지 않는다는 뜻으로, 동물·마스코트·요정처럼
+   * 의상만 보면 성별이 드러나지 않는 배역에 쓴다. 이런 배역이 넉넉해야
+   * 성별 맞춤을 켜도 후보가 마르지 않는다.
+   */
+  gender: Gender | null;
   /** 챙겨야 할 의상·소품 */
   items: string[];
   parkRisk: ParkRisk;
@@ -41,6 +50,11 @@ export interface Assignment {
 export const KIND_LABEL: Record<MemberKind, string> = {
   adult: '어른',
   child: '아이',
+};
+
+export const GENDER_LABEL: Record<Gender, string> = {
+  male: '남',
+  female: '여',
 };
 
 export const PARK_RISK_LABEL: Record<Exclude<ParkRisk, null>, string> = {

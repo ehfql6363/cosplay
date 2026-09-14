@@ -1,5 +1,5 @@
-import type { Assignment, Character, Member, MemberKind } from '../types';
-import { KIND_LABEL } from '../types';
+import type { Assignment, Character, Gender, Member, MemberKind } from '../types';
+import { GENDER_LABEL, KIND_LABEL } from '../types';
 
 export interface AssignInput {
   members: Member[];
@@ -10,13 +10,24 @@ export interface AssignInput {
   exclude?: Iterable<string>;
   /** 얼굴을 덮는 탈·가면이나 무기류 소품이 필요한 캐릭터를 후보에서 제외 */
   parkSafeOnly?: boolean;
+  /** 배역의 성별을 구성원의 성별에 맞춘다. 성별이 없는(null) 배역은 누구나 맡는다. */
+  matchGender?: boolean;
   rng?: () => number;
 }
 
 export interface Shortage {
   kind: MemberKind | 'total';
+  /** 성별 맞춤이 켜져 있을 때만 채워진다. */
+  gender: Gender | null;
   need: number;
   have: number;
+}
+
+/** 이 구성원이 맡을 수 있는 배역인가. 후보 선정과 부족 진단이 같은 기준을 쓰도록 모아 둔다. */
+function canPlay(character: Character, member: Member, matchGender: boolean): boolean {
+  if (!character.fits.includes(member.kind)) return false;
+  if (matchGender && character.gender !== null && character.gender !== member.gender) return false;
+  return true;
 }
 
 export type AssignResult =
@@ -34,7 +45,14 @@ const STEP_BUDGET = 200_000;
  * 남은 후보가 가장 적은 사람부터 채우고(MRV) 막히면 되돌아간다.
  */
 export function assignCharacters(input: AssignInput): AssignResult {
-  const { members, characters, keep = [], parkSafeOnly = false, rng = Math.random } = input;
+  const {
+    members,
+    characters,
+    keep = [],
+    parkSafeOnly = false,
+    matchGender = false,
+    rng = Math.random,
+  } = input;
   const excluded = new Set(input.exclude ?? []);
 
   const byId = new Map(characters.map((c) => [c.id, c]));
@@ -55,14 +73,14 @@ export function assignCharacters(input: AssignInput): AssignResult {
   );
   const open = members.filter((m) => !fixed.has(m.id));
 
-  const shortages = diagnose(open, pool);
+  const shortages = diagnose(open, pool, matchGender);
   if (shortages.length > 0) {
     return { ok: false, message: describe(shortages), shortages };
   }
 
   const candidates = open.map((m) =>
     shuffle(
-      pool.filter((c) => c.fits.includes(m.kind)).map((c) => c.id),
+      pool.filter((c) => canPlay(c, m, matchGender)).map((c) => c.id),
       rng,
     ),
   );
@@ -73,7 +91,7 @@ export function assignCharacters(input: AssignInput): AssignResult {
       ok: false,
       message:
         '조건에 맞게 나눌 수 있는 조합을 찾지 못했어요. 제외 설정을 풀거나 다른 주제를 뽑아보세요.',
-      shortages: [{ kind: 'total', need: open.length, have: pool.length }],
+      shortages: [{ kind: 'total', gender: null, need: open.length, have: pool.length }],
     };
   }
 
@@ -121,18 +139,36 @@ function solve(
 
 /**
  * 시작 전에 명백한 인원 부족을 잡아낸다.
+ *
+ * 같은 조건을 가진 사람끼리 묶어(어른 남자, 아이 여자 …) 그 묶음이 맡을 수 있는
+ * 배역 수와 비교한다. 성별 맞춤이 꺼져 있으면 구분만으로 묶는다.
  * 필요조건만 보므로 여기를 통과해도 조합이 없을 수 있고, 그 경우는 solve 가 걸러낸다.
  */
-function diagnose(open: Member[], pool: Character[]): Shortage[] {
+function diagnose(open: Member[], pool: Character[], matchGender: boolean): Shortage[] {
   const out: Shortage[] = [];
-  for (const kind of ['child', 'adult'] as const) {
-    const need = open.filter((m) => m.kind === kind).length;
-    if (need === 0) continue;
-    const have = pool.filter((c) => c.fits.includes(kind)).length;
-    if (have < need) out.push({ kind, need, have });
+  const done = new Set<string>();
+
+  for (const member of open) {
+    const key = matchGender ? `${member.kind}:${member.gender}` : member.kind;
+    if (done.has(key)) continue;
+    done.add(key);
+
+    const need = open.filter(
+      (m) => m.kind === member.kind && (!matchGender || m.gender === member.gender),
+    ).length;
+    const have = pool.filter((c) => canPlay(c, member, matchGender)).length;
+    if (have < need) {
+      out.push({
+        kind: member.kind,
+        gender: matchGender ? member.gender : null,
+        need,
+        have,
+      });
+    }
   }
+
   if (open.length > pool.length) {
-    out.push({ kind: 'total', need: open.length, have: pool.length });
+    out.push({ kind: 'total', gender: null, need: open.length, have: pool.length });
   }
   return out;
 }
@@ -140,8 +176,11 @@ function diagnose(open: Member[], pool: Character[]): Shortage[] {
 function describe(shortages: Shortage[]): string {
   return shortages
     .map((s) => {
-      const label = s.kind === 'total' ? '캐릭터' : `${KIND_LABEL[s.kind]} 캐릭터`;
-      return `${label}가 ${s.need - s.have}명분 부족해요. (${s.need}명 필요, ${s.have}명 가능)`;
+      const who =
+        s.kind === 'total'
+          ? ''
+          : KIND_LABEL[s.kind] + (s.gender ? ` ${GENDER_LABEL[s.gender]}자` : '') + ' ';
+      return `${who}캐릭터가 ${s.need - s.have}명분 부족해요. (${s.need}명 필요, ${s.have}명 가능)`;
     })
     .join(' ');
 }

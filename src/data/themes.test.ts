@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { THEMES } from './themes';
 import { assignCharacters } from '../lib/assign';
-import type { Member } from '../types';
+import type { Gender, Member, MemberKind } from '../types';
+
+/** 어른 남2·여2 + 아이 남2·여2. 이 앱이 상정하는 가족 모임 규모. */
+const MIXED_GROUP: Member[] = (['adult', 'child'] as MemberKind[]).flatMap((kind) =>
+  (['male', 'female'] as Gender[]).flatMap((gender) =>
+    [0, 1].map((i) => ({ id: `${kind}-${gender}-${i}`, name: `${kind}${gender}${i}`, kind, gender })),
+  ),
+);
 
 describe('주제 데이터', () => {
   it('주제와 캐릭터 id 가 겹치지 않는다', () => {
@@ -20,32 +27,56 @@ describe('주제 데이터', () => {
   });
 
   /**
-   * 안전 필터를 켜면 후보가 크게 줄어든다. 어느 주제가 걸려도 어른 4·아이 4 규모는
-   * 배정되어야 모임에서 룰렛을 믿고 돌릴 수 있다.
+   * 안전 필터와 성별 맞춤을 모두 켜면 후보가 크게 줄어든다. 어느 주제가 걸려도
+   * 이 규모는 배정되어야 모임에서 룰렛을 믿고 돌릴 수 있다.
    */
-  it('안전 필터를 켜도 어른 4명 · 아이 4명을 배정할 수 있다', () => {
-    const members: Member[] = [
-      ...Array.from({ length: 4 }, (_, i) => ({ id: `a${i}`, name: `어른${i}`, kind: 'adult' as const })),
-      ...Array.from({ length: 4 }, (_, i) => ({ id: `c${i}`, name: `아이${i}`, kind: 'child' as const })),
-    ];
-
+  it('안전 필터와 성별 맞춤을 켜도 어른 남2·여2, 아이 남2·여2 를 배정할 수 있다', () => {
     for (const theme of THEMES) {
       const res = assignCharacters({
-        members,
+        members: MIXED_GROUP,
         characters: theme.characters,
         parkSafeOnly: true,
+        matchGender: true,
       });
       expect(res.ok, `${theme.name}: ${res.ok ? '' : res.message}`).toBe(true);
     }
   });
 
-  it('안전 필터를 켠 뒤에도 주제마다 여유 후보가 남는다', () => {
+  it('성별 맞춤 배정은 배역 성별을 어기지 않는다', () => {
+    for (const theme of THEMES) {
+      const res = assignCharacters({
+        members: MIXED_GROUP,
+        characters: theme.characters,
+        parkSafeOnly: true,
+        matchGender: true,
+      });
+      expect(res.ok).toBe(true);
+      if (!res.ok) return;
+
+      const byId = new Map(theme.characters.map((ch) => [ch.id, ch]));
+      const byMember = new Map(MIXED_GROUP.map((m) => [m.id, m]));
+      for (const a of res.assignments) {
+        const ch = byId.get(a.characterId)!;
+        const m = byMember.get(a.memberId)!;
+        const where = `${theme.name}: ${m.name} → ${ch.name}`;
+        expect(ch.fits.includes(m.kind), where).toBe(true);
+        if (ch.gender !== null) expect(ch.gender, where).toBe(m.gender);
+      }
+    }
+  });
+
+  it('구분·성별 조합마다 다시 뽑을 여유가 남는다', () => {
     for (const theme of THEMES) {
       const safe = theme.characters.filter((ch) => ch.parkRisk === null);
-      // 8명을 배정하고도 한 명쯤 다시 뽑을 여지가 있어야 한다.
-      expect(safe.length, theme.name).toBeGreaterThanOrEqual(9);
-      expect(safe.filter((ch) => ch.fits.includes('adult')).length, theme.name).toBeGreaterThanOrEqual(5);
-      expect(safe.filter((ch) => ch.fits.includes('child')).length, theme.name).toBeGreaterThanOrEqual(5);
+      for (const kind of ['adult', 'child'] as MemberKind[]) {
+        for (const gender of ['male', 'female'] as Gender[]) {
+          const pool = safe.filter(
+            (ch) => ch.fits.includes(kind) && (ch.gender === null || ch.gender === gender),
+          );
+          // 두 명을 배정하고도 한 명쯤 다시 뽑을 여지가 있어야 한다.
+          expect(pool.length, `${theme.name} / ${kind} ${gender}`).toBeGreaterThanOrEqual(3);
+        }
+      }
     }
   });
 });
