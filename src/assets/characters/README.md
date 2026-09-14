@@ -35,8 +35,6 @@ node scripts/prepare-images.mjs ~/Downloads   # 실제로 정리
 ```
 src/assets/characters/ghibli/키키.png
 src/assets/characters/sanrio/키키.png
-src/assets/characters/hero/로빈.png
-src/assets/characters/onepiece/로빈.png
 ```
 
 ## 저작권
@@ -44,7 +42,7 @@ src/assets/characters/onepiece/로빈.png
 이 저장소는 공개되어 있습니다. 캐릭터 이미지는 대부분 저작권이 있으니,
 어떤 이미지를 넣을지는 직접 판단해 주세요. 저장소를 비공개로 돌리는 것도 방법입니다.
 
-## 파일명 목록 (총 115개)
+## 파일명 목록 (총 117개)
 
 ### 🏰 디즈니·픽사  `disney`
 
@@ -107,23 +105,25 @@ ghibli/키키.png   ← 이름이 겹쳐 주제 폴더 필요
 뮤츠.png
 ```
 
-### 🦸 슈퍼히어로  `hero`
+### 🦸 마블  `marvel`
 
 ```
 캡틴 아메리카.png
 헐크.png
-슈퍼맨.png
+로키.png
 팔콘.png
-hero/로빈.png   ← 이름이 겹쳐 주제 폴더 필요
-원더우먼.png
-슈퍼걸.png
+윈터 솔저.png
+닥터 스트레인지.png
+캡틴 마블.png
 미즈 마블.png
+가모라.png
 블랙 위도우.png
 스칼렛 위치.png
 그루트.png
+로켓.png
 스파이더맨.png
 아이언맨.png
-배트맨.png
+블랙 팬서.png
 앤트맨.png
 토르.png
 ```
@@ -177,7 +177,7 @@ hero/로빈.png   ← 이름이 겹쳐 주제 폴더 필요
 모모노스케.png
 나미.png
 비비.png
-onepiece/로빈.png   ← 이름이 겹쳐 주제 폴더 필요
+로빈.png
 한코크.png
 쵸파.png
 조로.png

@@ -103,20 +103,23 @@ const SPECS: Record<string, Spec> = {
   리자몽: [C.orange, C.orange, C.cream, 'ears', 'pants', C.red],
   뮤츠: [C.lavender, C.lavender, C.lavender, 'ears', 'pants'],
 
-  // 슈퍼히어로
+  // 마블
   '캡틴 아메리카': [C.blue, C.blue, C.blue, 'hair', 'pants', C.red],
   헐크: [C.green, C.green, C.purple, 'hair', 'pants'],
-  슈퍼맨: [C.black, C.blue, C.blue, 'hair', 'pants', C.red],
   팔콘: [C.black, C.white, C.white, 'mask', 'pants', C.gray],
-  원더우먼: [C.black, C.red, C.blue, 'crown', 'dress', C.gold],
-  슈퍼걸: [C.gold, C.blue, C.blue, 'hair', 'dress', C.red],
   '미즈 마블': [C.black, C.blue, C.blue, 'hair', 'pants', C.red],
   '블랙 위도우': [C.red, C.black, C.black, 'hair', 'pants'],
   '스칼렛 위치': [C.red, C.crimson, C.crimson, 'hair', 'dress', C.crimson],
+  로키: [C.black, C.darkGreen, C.darkGreen, 'hair', 'pants', C.gold],
+  '윈터 솔저': [C.brown, C.black, C.black, 'hair', 'pants', C.silver],
+  '닥터 스트레인지': [C.black, C.blue, C.blue, 'hair', 'dress', C.red],
+  '캡틴 마블': [C.gold, C.blue, C.red, 'hair', 'pants', C.gold],
+  가모라: [C.crimson, C.black, C.black, 'hair', 'pants', C.green],
+  로켓: [C.brown, C.orange, C.orange, 'ears', 'pants', C.brown],
+  '블랙 팬서': [C.black, C.black, C.black, 'mask', 'pants', C.silver],
   그루트: [C.green, C.brown, C.brown, 'hair', 'pants'],
   스파이더맨: [C.red, C.red, C.blue, 'mask', 'pants'],
   아이언맨: [C.red, C.red, C.gold, 'mask', 'pants', C.sky],
-  배트맨: [C.black, C.black, C.black, 'mask', 'pants', C.gray],
   앤트맨: [C.red, C.red, C.black, 'mask', 'pants'],
   토르: [C.gold, C.black, C.black, 'hair', 'pants', C.red],
 
@@ -161,6 +164,7 @@ const SPECS: Record<string, Spec> = {
   모모노스케: [C.black, C.sky, C.sky, 'hair', 'dress'],
   나미: [C.orange, C.orange, C.blue, 'hair', 'dress'],
   비비: [C.blue, C.orange, C.orange, 'hair', 'dress'],
+  로빈: [C.black, C.purple, C.black, 'hair', 'dress'],
   한코크: [C.black, C.red, C.red, 'hair', 'dress'],
   쵸파: [C.pink, C.pink, C.pink, 'hat', 'pants', C.brown],
   조로: [C.green, C.green, C.black, 'hair', 'pants'],
@@ -181,12 +185,10 @@ const SPECS: Record<string, Spec> = {
 };
 
 /**
- * 이름이 겹치는 캐릭터. 슈퍼히어로 로빈과 원피스 로빈은 전혀 다른 사람이고,
- * 지브리 키키와 산리오 키키도 마찬가지다. 이런 이름만 주제까지 넣어 구분한다.
+ * 이름이 겹치는 캐릭터. 지브리 키키(마녀 배달부)와 산리오 키키(별 쌍둥이)는
+ * 전혀 다른 캐릭터다. 이런 이름만 주제까지 넣어 구분한다.
  */
 const BY_THEME: Record<string, Spec> = {
-  'hero/로빈': [C.black, C.red, C.green, 'mask', 'pants', C.yellow],
-  'onepiece/로빈': [C.black, C.purple, C.black, 'hair', 'dress'],
   'ghibli/키키': [C.black, C.black, C.black, 'hair', 'dress', C.red],
   'sanrio/키키': [C.sky, C.sky, C.sky, 'hat', 'pants'],
 };
