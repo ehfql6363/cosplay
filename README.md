@@ -125,6 +125,18 @@ npm run build   # 타입 검사 후 프로덕션 빌드
 (`.github/workflows/deploy.yml`). 저장소 **Settings → Pages → Source** 를 **GitHub Actions**
 로 한 번 바꿔 주어야 첫 배포가 됩니다.
 
+### 사이트가 안 뜰 때
+
+- **404 가 뜬다** — 저장소를 private 으로 바꾸지 않았는지 보세요. 무료 플랜은 private 저장소의
+  Pages 를 서빙하지 못해서, private 으로 바꾸는 순간 GitHub 이 Pages 를 자동으로 내립니다.
+  public 으로 되돌려도 자동으로 켜지지 않으니 Source 를 다시 지정해야 합니다.
+- **흰 화면인데 콘솔에 `main.tsx` 404** — Pages 가 빌드 결과물이 아니라 저장소 소스를 그대로
+  서빙하고 있다는 뜻입니다. Source 가 `Deploy from a branch` 로 되어 있는지 확인하세요.
+  빌드된 `index.html` 은 `main.tsx` 를 참조하지 않습니다.
+- **Source 를 GitHub Actions 로 바꿨는데 그대로다** — Source 변경만으로는 워크플로가 돌지
+  않습니다. Actions 탭에서 `Deploy to GitHub Pages` 를 열고 **Run workflow** 를 누르거나
+  아무 커밋이나 푸시하세요. 그 전까지는 이전 배포본이 계속 서빙됩니다.
+
 Pages 는 `/cosplay/` 경로로 서빙되므로 `vite.config.ts` 의 `base` 가 거기에 맞춰져 있습니다.
 다른 곳에 올릴 때는 `BASE_PATH=/ npm run build` 처럼 덮어쓰면 됩니다.
 
